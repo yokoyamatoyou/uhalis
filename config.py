@@ -5,16 +5,16 @@ CONFIG_FILE = 'config.json'
 MODEL_NAME = "gpt-4.1-mini-2025-04-14"
 
 DEFAULT_WEIGHTS = {
-    "hate_score": 0.5,
-    "hate/threatening_score": 0.3,
-    "violence_score": 0.3,
-    "sexual_score": 0.1,
-    "sexual/minors_score": 0.1,
-    "aggressiveness_score": 0.5,
-    "flag_hate": 2.0,
-    "flag_hate/threatening": 1.0,
-    "flag_violence": 1.5,
-    "flag_sexual": 1.0
+    "hate_score": 0.06,
+    "hate/threatening_score": 0.04,
+    "violence_score": 0.04,
+    "sexual_score": 0.02,
+    "sexual/minors_score": 0.02,
+    "aggressiveness_score": 0.06,
+    "flag_hate": 0.28,
+    "flag_hate/threatening": 0.14,
+    "flag_violence": 0.20,
+    "flag_sexual": 0.14
 }
 
 class ConfigManager:
