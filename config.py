@@ -3,6 +3,8 @@ import os
 
 CONFIG_FILE = 'config.json'
 MODEL_NAME = "gpt-4.1-mini-2025-04-14"
+DEFAULT_TEMPERATURE = 1.0
+DEFAULT_TOP_P = 0.9
 
 DEFAULT_WEIGHTS = {
     "hate_score": 0.06,
@@ -32,7 +34,11 @@ class ConfigManager:
             with open(self.path, 'r', encoding='utf-8') as f:
                 self.data = json.load(f)
         else:
-            self.data = {"weights": DEFAULT_WEIGHTS.copy()}
+            self.data = {
+                "weights": DEFAULT_WEIGHTS.copy(),
+                "temperature": DEFAULT_TEMPERATURE,
+                "top_p": DEFAULT_TOP_P,
+            }
 
     def save(self):
         """Persist current settings to disk."""
@@ -48,3 +54,19 @@ class ConfigManager:
         if "weights" not in self.data:
             self.data["weights"] = {}
         self.data["weights"][key] = value
+
+    def get_temperature(self) -> float:
+        """Return the saved temperature setting."""
+        return float(self.data.get("temperature", DEFAULT_TEMPERATURE))
+
+    def set_temperature(self, value: float):
+        """Set and store the temperature value."""
+        self.data["temperature"] = value
+
+    def get_top_p(self) -> float:
+        """Return the saved top-p setting."""
+        return float(self.data.get("top_p", DEFAULT_TOP_P))
+
+    def set_top_p(self, value: float):
+        """Set and store the top-p value."""
+        self.data["top_p"] = value
