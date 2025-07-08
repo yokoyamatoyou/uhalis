@@ -19,8 +19,8 @@ class ModerationApp(ctk.CTk):
         self.analyzer = analyzer
         self.config = config
         self.df = None
-        self.temperature = 1.0
-        self.top_p = 0.9
+        self.temperature = config.get_temperature()
+        self.top_p = config.get_top_p()
         self.weights = config.data.get("weights", {})
         self.updating_weights = False
         self.create_ui()
@@ -116,6 +116,8 @@ class ModerationApp(ctk.CTk):
         try:
             self.temperature = float(self.temp_entry.get())
             self.top_p = float(self.top_p_entry.get())
+            self.config.set_temperature(self.temperature)
+            self.config.set_top_p(self.top_p)
             return True
         except ValueError:
             messagebox.showerror("エラー", "数値を入力してください")
@@ -201,6 +203,8 @@ class ModerationApp(ctk.CTk):
 
         weights = {k: slider.get() for k, slider in self.weight_sliders.items()}
         self.config.data["weights"] = weights
+        self.config.set_temperature(self.temperature)
+        self.config.set_top_p(self.top_p)
         self.config.save()
         self.apply_total_score(weights)
         self.status_label.configure(text="分析が完了しました", text_color="green")

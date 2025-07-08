@@ -14,4 +14,4 @@ This project provides a text moderation tool that evaluates the aggressiveness o
    python main.py
    ```
 
-The UI allows you to load an Excel file, select the column to analyze, and start moderation. You can adjust parameters and weight settings in the **設定** tab. Results can be saved back to an Excel file. Configuration values (including the weight settings) are saved to `config.json`. The default weights sum to `1.0`, so you can start analyzing without tweaking them first.
+The UI allows you to load an Excel file, select the column to analyze, and start moderation. You can adjust parameters and weight settings in the **設定** tab. Results can be saved back to an Excel file. Configuration values—including temperature, top-p, and the weight settings—are saved to `config.json`. The default weights sum to `1.0`, so you can start analyzing without tweaking them first.
