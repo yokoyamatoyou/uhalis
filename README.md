@@ -6,7 +6,7 @@ This project provides a text moderation tool that evaluates the aggressiveness o
 
 1. Install dependencies:
    ```bash
-   pip install openai pandas customtkinter
+   pip install -r requirements.txt
    ```
 2. Set your OpenAI API key in the `OPENAI_API_KEY` environment variable.
 3. Run the application:
