@@ -69,10 +69,20 @@ class ModerationApp(ctk.CTk):
         self.weight_sliders = {}
         for i, (key, val) in enumerate(self.weights.items()):
             ctk.CTkLabel(self.weight_frame, text=key).grid(row=i, column=0, sticky="w", padx=10, pady=5)
-            slider = ctk.CTkSlider(self.weight_frame, from_=0, to=2.0, number_of_steps=100)
+            slider = ctk.CTkSlider(
+                self.weight_frame,
+                from_=0,
+                to=2.0,
+                number_of_steps=100,
+                command=lambda _=None: self.update_weight_info(),
+            )
             slider.set(val)
             slider.grid(row=i, column=1, padx=10, pady=5)
             self.weight_sliders[key] = slider
+
+        self.remaining_weight_label = ctk.CTkLabel(self.settings_tab, text="未分配の重み: 0.0")
+        self.remaining_weight_label.pack(pady=5)
+        self.update_weight_info()
 
     def load_excel_file(self):
         file_path = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx")])
@@ -84,7 +94,7 @@ class ModerationApp(ctk.CTk):
             if self.df.columns:
                 self.column_combo.set(self.df.columns[0])
             self.status_label.configure(text=f"ファイルを読み込みました: {len(self.df)}件")
-            self.analyze_button.configure(state="normal")
+            self.update_weight_info()
         except Exception as e:
             self.status_label.configure(text="ファイルの読み込みに失敗", text_color="red")
             messagebox.showerror("読み込みエラー", str(e))
@@ -97,6 +107,18 @@ class ModerationApp(ctk.CTk):
         except ValueError:
             messagebox.showerror("エラー", "Temperature と Top-p には数値を入力してください")
             return False
+
+    def update_weight_info(self):
+        total = sum(slider.get() for slider in self.weight_sliders.values())
+        remaining = 1.0 - total
+        self.remaining_weight_label.configure(text=f"未分配の重み: {remaining:.2f}")
+        if remaining < 0:
+            self.remaining_weight_label.configure(text_color="red")
+            self.analyze_button.configure(state="disabled")
+        else:
+            self.remaining_weight_label.configure(text_color="white")
+            if self.df is not None:
+                self.analyze_button.configure(state="normal")
 
     def start_analysis(self):
         if not self.validate_parameters():
@@ -118,9 +140,14 @@ class ModerationApp(ctk.CTk):
         for idx, row in self.df.iterrows():
             text = row[column]
             cats, scores = await self.analyzer.moderate_text(text)
-            for name in category_names:
-                category_flags[name].append(getattr(cats, name.replace("/", "_"), False))
-                category_scores[name].append(getattr(scores, name.replace("/", "_"), 0.0))
+            if cats is None or scores is None:
+                for name in category_names:
+                    category_flags[name].append(False)
+                    category_scores[name].append(0.0)
+            else:
+                for name in category_names:
+                    category_flags[name].append(getattr(cats, name.replace("/", "_"), False))
+                    category_scores[name].append(getattr(scores, name.replace("/", "_"), 0.0))
             score, reason = await self.analyzer.get_aggressiveness_score(text, self.temperature, self.top_p)
             ag_scores.append(score)
             ag_reasons.append(reason)

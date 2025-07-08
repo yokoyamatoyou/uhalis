@@ -6,14 +6,19 @@ class TextAnalyzer:
     def __init__(self, client: AsyncOpenAI):
         self.client = client
 
-    async def moderate_text(self, text: str):
-        resp = await self.client.moderations.create(
-            input=text,
-            model="omni-moderation-latest",
-        )
-        cats = resp.results[0].categories
-        scores = resp.results[0].category_scores
-        return cats, scores
+    async def moderate_text(self, text: str, max_retries: int = 3):
+        for _ in range(max_retries):
+            try:
+                resp = await self.client.moderations.create(
+                    input=text,
+                    model="omni-moderation-latest",
+                )
+                cats = resp.results[0].categories
+                scores = resp.results[0].category_scores
+                return cats, scores
+            except Exception:
+                await asyncio.sleep(1)
+        return None, None
 
     async def get_aggressiveness_score(
         self,
