@@ -2,11 +2,16 @@ import asyncio
 from openai import AsyncOpenAI
 from config import MODEL_NAME
 
+
 class TextAnalyzer:
+    """Perform moderation requests and score text aggressiveness."""
+
     def __init__(self, client: AsyncOpenAI):
+        """Store an AsyncOpenAI client for API calls."""
         self.client = client
 
     async def moderate_text(self, text: str, max_retries: int = 3):
+        """Return OpenAI moderation results for ``text``."""
         for _ in range(max_retries):
             try:
                 resp = await self.client.moderations.create(
@@ -27,6 +32,7 @@ class TextAnalyzer:
         top_p: float = 0.9,
         max_retries: int = 3,
     ):
+        """Return a tuple ``(score, reason)`` describing aggression level."""
         prompt = f"""
 あなたソーシャルメディアの投稿を分析し、その攻撃性を評価する専門家です。
 以下の評価基準と例を参考に、与えられた文章の攻撃性スコアを0から9の整数で決定し、

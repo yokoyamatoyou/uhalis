@@ -18,12 +18,16 @@ DEFAULT_WEIGHTS = {
 }
 
 class ConfigManager:
+    """Handle reading and writing of configuration values."""
+
     def __init__(self, path: str = CONFIG_FILE):
+        """Initialize the manager and load the config file."""
         self.path = path
         self.data: dict = {}
         self.load()
 
     def load(self):
+        """Load configuration from ``self.path`` if it exists."""
         if os.path.exists(self.path):
             with open(self.path, 'r', encoding='utf-8') as f:
                 self.data = json.load(f)
@@ -31,13 +35,16 @@ class ConfigManager:
             self.data = {"weights": DEFAULT_WEIGHTS.copy()}
 
     def save(self):
+        """Persist current settings to disk."""
         with open(self.path, 'w', encoding='utf-8') as f:
             json.dump(self.data, f, ensure_ascii=False, indent=2)
 
     def get_weight(self, key: str) -> float:
+        """Return a weight value from the config."""
         return self.data.get("weights", {}).get(key, DEFAULT_WEIGHTS.get(key, 0.0))
 
     def set_weight(self, key: str, value: float):
+        """Update a weight entry and ensure the section exists."""
         if "weights" not in self.data:
             self.data["weights"] = {}
         self.data["weights"][key] = value
