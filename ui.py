@@ -11,7 +11,10 @@ ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
 class ModerationApp(ctk.CTk):
+    """GUI application for running text moderation."""
+
     def __init__(self, analyzer: TextAnalyzer, config: ConfigManager):
+        """Create the application and build the UI."""
         super().__init__()
         self.analyzer = analyzer
         self.config = config
@@ -22,6 +25,7 @@ class ModerationApp(ctk.CTk):
         self.create_ui()
 
     def create_ui(self):
+        """Initialize all widgets for both tabs."""
         self.title("テキストモデレーションツール")
         self.geometry("800x600")
 
@@ -85,6 +89,7 @@ class ModerationApp(ctk.CTk):
         self.update_weight_info()
 
     def load_excel_file(self):
+        """Open an Excel file and populate the column selector."""
         file_path = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx")])
         if not file_path:
             return
@@ -100,6 +105,13 @@ class ModerationApp(ctk.CTk):
             messagebox.showerror("読み込みエラー", str(e))
 
     def validate_parameters(self):
+        """Validate temperature and top-p entries.
+
+        Returns
+        -------
+        bool
+            ``True`` if both values can be converted to ``float``.
+        """
         try:
             self.temperature = float(self.temp_entry.get())
             self.top_p = float(self.top_p_entry.get())
@@ -109,6 +121,7 @@ class ModerationApp(ctk.CTk):
             return False
 
     def update_weight_info(self):
+        """Update remaining-weight display and button states."""
         total = sum(slider.get() for slider in self.weight_sliders.values())
         remaining = 1.0 - total
         self.remaining_weight_label.configure(text=f"未分配の重み: {remaining:.2f}")
@@ -121,6 +134,7 @@ class ModerationApp(ctk.CTk):
                 self.analyze_button.configure(state="normal")
 
     def start_analysis(self):
+        """Begin analysis of the loaded file in a worker thread."""
         if not self.validate_parameters():
             return
         self.analyze_button.configure(state="disabled")
@@ -128,6 +142,7 @@ class ModerationApp(ctk.CTk):
         threading.Thread(target=lambda: asyncio.run(self.analyze_file_async())).start()
 
     async def analyze_file_async(self):
+        """Run moderation on each row of ``self.df`` asynchronously."""
         column = self.column_combo.get()
         category_names = ["hate", "hate/threatening", "self-harm", "sexual",
                           "sexual/minors", "violence", "violence/graphic"]
@@ -172,6 +187,7 @@ class ModerationApp(ctk.CTk):
         self.analyze_button.configure(state="normal")
 
     def apply_total_score(self, weights):
+        """Calculate a weighted aggression score for each row."""
         def calc(row):
             val = 0.0
             val += weights.get("hate_score", 0) * row.get("hate_score", 0)
@@ -190,6 +206,7 @@ class ModerationApp(ctk.CTk):
         self.df["total_aggression"] = self.df.apply(calc, axis=1)
 
     def save_results(self):
+        """Save the processed DataFrame to a new Excel file."""
         save_path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel files", "*.xlsx")])
         if not save_path:
             return
