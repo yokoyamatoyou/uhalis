@@ -22,6 +22,7 @@ class ModerationApp(ctk.CTk):
         self.temperature = 1.0
         self.top_p = 0.9
         self.weights = config.data.get("weights", {})
+        self.updating_weights = False
         self.create_ui()
 
     def create_ui(self):
@@ -78,7 +79,7 @@ class ModerationApp(ctk.CTk):
                 from_=0,
                 to=2.0,
                 number_of_steps=100,
-                command=lambda _=None: self.update_weight_info(),
+                command=lambda v, k=key: self.on_weight_change(k, v),
             )
             slider.set(val)
             slider.grid(row=i, column=1, padx=10, pady=5)
@@ -119,6 +120,27 @@ class ModerationApp(ctk.CTk):
         except ValueError:
             messagebox.showerror("エラー", "数値を入力してください")
             return False
+
+    def on_weight_change(self, key: str, value: float):
+        """Redistribute weights so that the total remains 1.0."""
+        if self.updating_weights:
+            return
+        self.updating_weights = True
+        try:
+            others = {k: s for k, s in self.weight_sliders.items() if k != key}
+            leftover = max(1.0 - value, 0.0)
+            others_sum = sum(s.get() for s in others.values())
+            if others:
+                if others_sum == 0:
+                    share = leftover / len(others)
+                    for s in others.values():
+                        s.set(share)
+                else:
+                    for s in others.values():
+                        s.set(s.get() / others_sum * leftover)
+        finally:
+            self.updating_weights = False
+            self.update_weight_info()
 
     def update_weight_info(self):
         """Update remaining-weight display and button states."""
