@@ -117,7 +117,7 @@ class ModerationApp(ctk.CTk):
             self.top_p = float(self.top_p_entry.get())
             return True
         except ValueError:
-            messagebox.showerror("エラー", "Temperature と Top-p には数値を入力してください")
+            messagebox.showerror("エラー", "数値を入力してください")
             return False
 
     def update_weight_info(self):
